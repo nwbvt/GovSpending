@@ -4,8 +4,9 @@ from argparse import ArgumentParser
 import json
 import sys
 
-CATS = ["defense", "education", "general", "healthcare", "interest", "other", "pensions", "protection", "transportation", "welfare"]
-COLS = ["year", "gdp", "population", "fed", "fed_i", "state", "state_i", "local", "local_i"]
+CATS = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions", "Protection", "Transportation", "Welfare"]
+COLS = ["Year", "GDP", "Population", "Federal", "Federal_i", "Transfer", "Transfer_i", "State", "State_i", "Local", "Local_i", "Total", "Total_i"]
+DEFAULT_UNIT = "$ billion 2012"
 
 def eval(s):
     try:
@@ -13,41 +14,57 @@ def eval(s):
     except:
         return None
 
-def parse_line(line):
+def parse_line(line, cols):
     line = line.strip()
     if not line:
         return None
-    return dict(zip(COLS, map(eval, line.split(","))))
+    return dict(zip(cols, map(eval, line.split(","))))
 
 
 def get_spending(row):
-    return {level: (float(row[level]), row[f"{level}_i"])
-            for level in ["fed", "state", "local"]}
+    return {level: (float(row.get(level, 0)), row.get(f"{level}_i", 'n'))
+            for level in ["Federal", "State", "Local", "Transfer"]}
+
+def get_cols(col_row, cat, unit=DEFAULT_UNIT):
+    colnames = list(map(literal_eval, col_row.split(',')))
+    cols = [""] * len(colnames)
+    cols[colnames.index('Year')] = 'Year'
+    cols[colnames.index(f'GDP-US {unit}')] = "GDP"
+    cols[colnames.index("Population-US million")] = "Population"
+    for level in ["Federal", "Transfer", "State", "Local", "Total"]:
+        expected_col = f"{cat} - {'' if level == 'Transfer' else level} {unit}"
+        if expected_col in colnames:
+            cols[colnames.index(expected_col)] = level
+            cols[colnames.index(expected_col) + 1] = level + "_i"
+    return cols
 
 
 def build_data(folder):
     data = {}
     with open(f"{folder}/total.csv") as f:
         lines = f.readlines()
+        cols = get_cols(lines[1], "Total Spending")
         for line in lines[2:]:
-            row = parse_line(line)
+            row = parse_line(line, cols)
             if row is None:
                 break
-            year = int(row['year'])
+            year = int(row['Year'])
             data[year] = {
-                'population': row['population'],
-                'gdp': row['gdp'],
-                'total': get_spending(row)
+                'Population': row['Population'],
+                'GDP': row['GDP'],
+                'Total': get_spending(row)
             }
 
     for cat in CATS:
-        with open(f"{folder}/{cat}.csv") as f:
+        file_cat = cat.lower().replace(" ", "")
+        with open(f"{folder}/{file_cat}.csv") as f:
             lines = f.readlines()
+            cols = get_cols(lines[1], cat)
             for line in lines[2:]:
-                row = parse_line(line)
+                row = parse_line(line, cols)
                 if row is None:
                     break
-                year = int(row['year'])
+                year = int(row['Year'])
                 data[year][cat] = get_spending(row)
     return data
 
