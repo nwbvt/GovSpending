@@ -2,8 +2,16 @@ const categories = ["Defense", "Education", "General Government", "Health Care",
                     "Protection", "Transportation", "Welfare"]
 const margin = 100
 
-function formatNumber(num) {
+function formatNumber(num, currency) {
     var string = "";
+    var negated = false;
+    if (num < 0) {
+        negated = true;
+        num = -num;
+    }
+    if (num === 0) {
+        string = "0";
+    }
     while (num > 0) {
         const part = Math.round(num % 1000);
         string = part + string;
@@ -15,8 +23,14 @@ function formatNumber(num) {
             if (part < 100) {
                 string = "0" + string;
             }
-            string = "," + string
+            string = "," + string;
         }
+    }
+    if (currency) {
+        string = "$" + string;
+    }
+    if (negated) {
+        string = "-" + string;
     }
     return string;
 }
@@ -86,11 +100,11 @@ function govChart() {
                 } else {
                     $("#gdp")[0].value = "NA";
                 }
-                $("#total-spending")[0].value = "$" + formatNumber(data[chart.year]["Total"]["Total"][0] * 1000000000);
-                $("#total-federal")[0].value = "$" + formatNumber(data[chart.year]["Total"]["Federal"][0] * 1000000000);
-                $("#total-state")[0].value = "$" + formatNumber(data[chart.year]["Total"]["State"][0] * 1000000000);
-                $("#total-local")[0].value = "$" + formatNumber(data[chart.year]["Total"]["Local"][0] * 1000000000);
-                $("#total-transfer")[0].value = "$" + formatNumber(data[chart.year]["Total"]["Transfer"][0] * 1000000000);
+                $("#total-spending")[0].value = formatNumber(data[chart.year]["Total"]["Total"][0] * 1000000000, true);
+                $("#total-federal")[0].value = formatNumber(data[chart.year]["Total"]["Federal"][0] * 1000000000, true);
+                $("#total-state")[0].value = formatNumber(data[chart.year]["Total"]["State"][0] * 1000000000, true);
+                $("#total-local")[0].value = formatNumber(data[chart.year]["Total"]["Local"][0] * 1000000000, true);
+                $("#total-transfer")[0].value = formatNumber(data[chart.year]["Total"]["Transfer"][0] * 1000000000, true);
             } 
             chart.setYear(chart.years[0]);
             yearInput.addEventListener('change', event => {chart.setYear(event.target.value)});
