@@ -1,6 +1,7 @@
 const categories = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions",
-                    "Protection", "Transportation", "Welfare"]
-const margin = 100
+                    "Protection", "Transportation", "Welfare"];
+const margin = 100;
+const playDelay = 500;
 
 function formatNumber(num, currency) {
     var string = "";
@@ -38,8 +39,8 @@ function formatNumber(num, currency) {
 function govChart() {
 
     const svg = d3.select("svg")
-    const height = 800;
-    const width = 1200;
+    const height = 600;
+    const width = 1000;
     svg.attr("height", height + 2*margin)
     svg.attr("width", width + 2*margin)
     const xScale = d3.scaleBand().domain(categories).range([0,width]);
@@ -80,7 +81,7 @@ function govChart() {
                 }
             }
             chart.setYear = year => {
-                chart.year = year;
+                chart.year = Number(year);
                 if (yearInput.value != year) {
                     yearInput.value = year;
                 }
@@ -90,7 +91,7 @@ function govChart() {
             chart.refresh = _ => {
                 var maxSpending = d3.max(chart.years, year => d3.max(categories, cat => totalSpending(cat, year)))
                 yScale.domain([0, maxSpending]);
-                svg.selectAll("rect").data(categories).transition().duration(1000)
+                svg.selectAll("rect").data(categories).transition().duration(500)
                     .attr("height", cat => height - yScale(totalSpending(cat)))
                     .attr("y", cat => yScale(totalSpending(cat)));
                 gy.call(yAxis);
@@ -114,9 +115,32 @@ function govChart() {
                 } else {
                     chart.perCapita = false;
                 }
-                chart.refresh()
+                chart.refresh();
             })
         })
+    const playButton = $("#playButton")
+    chart.play = _ => {
+        if (chart.playing) {
+            chart.playing = false;
+            playButton.text("Play")
+        } else {
+            chart.playing = true;
+            setTimeout(chart.iter, playDelay)
+            playButton.text("Pause")
+        }
+    }
+    chart.iter = _ => {
+        if (chart.year === Number(chart.years[chart.years.length-1])) {
+            // Reached the end
+            chart.playing = false;
+            playButton.text("Play")
+        }
+        if (chart.playing) {
+            chart.setYear(chart.year + 1);
+            setTimeout(chart.iter, playDelay)
+        }
+    }
+    playButton[0].addEventListener("click", chart.play);
     return chart;
 }
 
