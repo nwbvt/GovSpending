@@ -23,7 +23,7 @@ def parse_line(line, cols):
 
 def get_spending(row):
     return {level: (float(row.get(level, 0)), row.get(f"{level}_i", 'n'))
-            for level in ["Federal", "State", "Local", "Transfer"]}
+            for level in ["Federal", "State", "Local", "Transfer", "Total"]}
 
 def get_cols(col_row, cat, unit=DEFAULT_UNIT):
     colnames = list(map(literal_eval, col_row.split(',')))

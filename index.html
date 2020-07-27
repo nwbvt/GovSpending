@@ -10,13 +10,95 @@
 
     <title>US Government Spending</title>
   </head>
-  <body>
-    <h1>US Government Spending</h1>
+  <body class="text-center">
+      <p>
+        <h1>US Government Spending</h1>
+      </p>
+      <p>
+        <h4>In 2012 USD</h4>
+      </p>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src = "https://d3js.org/d3.v4.min.js"></script>
+    <div class="container-xl">
+      <div class="row">
+        <div class="col-2">
+            <div class="form-group">
+              <button type="button" class="btn btn-primary" id="playButton">Play</button>
+            </div>
+          </form>
+        </div>
+        <div class="col-8">
+          <form>
+            <div class="form-group">
+              <input type="range" class="form-control-range" id="year">
+            </div>
+          </form>
+        </div>
+        <div class="col-2">
+          <h3><span id="year-label"></span></h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <form>
+            <div class="form-group row">
+              <label for="population">Population</label>
+              <input class="form-control-plaintext" type="text" id="population" placeholder="Population" readonly>
+            </div>
+            <div class="form-group row">
+              <label for="gdp">GDP</label>
+              <input class="form-control-plaintext" type="text" id="gdp" placeholder="GDP" readonly>
+            </div>
+            <div class="form-group row">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="percapita">
+                <label class="custom-control-label" for="percapita">Per Capita</label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-8">
+          <h4>Totals</h4>
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group row">
+                <label for="total-spending">Total Spending</label>
+                <input class="form-control-plaintext" type="text" id="total-spending" placeholder="Total Spending" readonly>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group row">
+                <label for="total-federal">Federal Spending</label>
+                <input class="form-control-plaintext" type="text" id="total-federal" placeholder="total federal" readonly>
+              </div>
+              <div class="form-group row">
+                <label for="total-federal">State Spending</label>
+                <input class="form-control-plaintext" type="text" id="total-state" placeholder="total state" readonly>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group row">
+                <label for="total-local">Local Spending</label>
+                <input class="form-control-plaintext" type="text" id="total-local" placeholder="total local" readonly>
+              </div>
+              <div class="form-group row">
+                <label for="total-transfer">Transfers</label>
+                <input class="form-control-plaintext" type="text" id="total-transfer" placeholder="total transfer" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg id="chart" width=1500 height=1000></svg>
+      <script src="./chart.js", type="module"></script>
+    </div>
   </body>
+  <script>
+
+  </script>
 </html>
