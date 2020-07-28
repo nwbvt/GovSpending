@@ -3,6 +3,18 @@ const categories = ["Defense", "Education", "General Government", "Health Care",
 const margin = 100;
 const playDelay = 500;
 
+const events = [{year: 1917, cat: "Defense", message: "US Enters WW1"},
+                {year: 1935, cat: "Pensions", message: "Social Security Established"},
+                {year: 1941, cat: "Defense", message: "US Enters WW2"},
+                {year: 1966, cat: "Health Care", message: "Medicare Established"},
+                {year: 1991, cat: "Defense", message: "USSR Breaks Up"},
+                {year: 2001, cat: "Defense", message: "9-11 Terrorist Attacks"},
+                {year: 2001, cat: "Education", message: "No Child Left Behind Act"},
+                {year: 2010, cat: "Health Care", message: "Affordable Care Act Passed"},
+                {year: 2012, cat: "Pensions", message: "Baby Boomers Begin Becoming Social Security Eligible"}]
+
+const keepEvents = 10;
+
 function formatNumber(num, currency) {
     var string = "";
     var negated = false;
@@ -85,7 +97,6 @@ function govChart() {
                 if (yearInput.value != year) {
                     yearInput.value = year;
                 }
-                $("#year-label").text(year);
                 chart.refresh();
             }
             chart.refresh = _ => {
@@ -95,6 +106,23 @@ function govChart() {
                     .attr("height", cat => height - yScale(totalSpending(cat)))
                     .attr("y", cat => yScale(totalSpending(cat)));
                 gy.call(yAxis);
+                chart.updateEvents()
+                chart.updateExternal()
+            },
+            chart.updateEvents = _ => {
+                const displayedEvents = events.filter(e => {
+                    return e.year <= chart.year && e.year > chart.year - keepEvents;
+                });
+                const join = chartbox.selectAll("text").data(displayedEvents);
+                join.enter().append("text").merge(join)
+                    .attr("x", e => xScale(e.category))
+                    .attr("y", (e, i) => i*20)
+                    .text(e => `${e.year}: ${e.message}`);
+                join.exit().remove();
+            };
+            chart.updateExternal = _ => {
+                //Update fields external to the chart
+                $("#year-label").text(chart.year);
                 $("#population")[0].value = formatNumber(data[chart.year]["Population"] * 1000000 );
                 if (data[chart.year]["GDP"]) {
                     $("#gdp")[0].value = formatNumber(data[chart.year]["GDP"] * 1000000000);
@@ -106,7 +134,7 @@ function govChart() {
                 $("#total-state")[0].value = formatNumber(data[chart.year]["Total"]["State"][0] * 1000000000, true);
                 $("#total-local")[0].value = formatNumber(data[chart.year]["Total"]["Local"][0] * 1000000000, true);
                 $("#total-transfer")[0].value = formatNumber(data[chart.year]["Total"]["Transfer"][0] * 1000000000, true);
-            } 
+            }
             chart.setYear(chart.years[0]);
             yearInput.addEventListener('change', event => {chart.setYear(event.target.value)});
             $("#percapita")[0].addEventListener('change', event => {
