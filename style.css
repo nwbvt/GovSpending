@@ -1,0 +1,26 @@
+body {
+    background-color: silver;
+}
+
+rect.bar {
+    fill: darkgreen;
+}
+
+rect.hoverzone {
+    opacity: 0;
+}
+
+div.card {
+    background-color: lightslategray;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: right;
+    width: 190px;
+    height: 150px;
+    padding: 10px;
+    background: lightgray;
+    border: 0px;
+    border-radius: 8px;
+}

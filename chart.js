@@ -3,17 +3,16 @@ const categories = ["Defense", "Education", "General Government", "Health Care",
 const margin = 100;
 const playDelay = 500;
 
-const events = [{year: 1917, cat: "Defense", message: "US Enters WW1"},
-                {year: 1935, cat: "Pensions", message: "Social Security Established"},
-                {year: 1941, cat: "Defense", message: "US Enters WW2"},
-                {year: 1966, cat: "Health Care", message: "Medicare Established"},
-                {year: 1991, cat: "Defense", message: "USSR Breaks Up"},
-                {year: 2001, cat: "Defense", message: "9-11 Terrorist Attacks"},
-                {year: 2001, cat: "Education", message: "No Child Left Behind Act"},
-                {year: 2010, cat: "Health Care", message: "Affordable Care Act Passed"},
-                {year: 2012, cat: "Pensions", message: "Baby Boomers Begin Becoming Social Security Eligible"}]
+const moneyUnits = 1000000000
+const popUnits = 1000000
 
-const keepEvents = 10;
+var events = []
+
+d3.json("data/events.json", resp => {
+    events = resp.events
+})
+
+const keepEvents = 20;
 
 function formatNumber(num, currency) {
     var string = "";
@@ -28,7 +27,7 @@ function formatNumber(num, currency) {
     while (num > 0) {
         const part = Math.round(num % 1000);
         string = part + string;
-        num = Math.round(num / 1000);
+        num = Math.round((num-part) / 1000);
         if (num > 0) {
             if (part < 10) {
                 string = "0" + string;
@@ -51,8 +50,9 @@ function formatNumber(num, currency) {
 function govChart() {
 
     const svg = d3.select("svg")
+    const eventFeed = d3.select("#eventFeed")
     const height = 600;
-    const width = 1000;
+    const width = 800;
     svg.attr("height", height + 2*margin)
     svg.attr("width", width + 2*margin)
     const xScale = d3.scaleBand().domain(categories).range([0,width]);
@@ -60,10 +60,12 @@ function govChart() {
     const chartbox = svg.append("g").attr("transform", `translate(${margin},${margin})`)
         .attr("height", height).attr("width", width)
         .attr("viewbox", [0,0,width,height])
-    chartbox.selectAll("rect").data(categories).enter().append("rect").attr("fill", "#880F3F")
-        .style("mix-blend-mode", "multiply")
+    chartbox.selectAll("rect.bar").data(categories).enter().append("rect").attr("class", "bar").attr("fill", "#880F3F")
         .attr("width", xScale.bandwidth() - 2).attr("height", 0)
-        .attr("x", function(d,i) {return xScale(d)}).attr("y", height);
+        .attr("x", function(d) {return xScale(d)}).attr("y", height);
+    chartbox.selectAll("rect.hoverzone").data(categories).enter().append("rect").attr("class", "hoverzone")
+        .attr("width", xScale.bandwidth() - 2).attr("height", margin)
+        .attr("x", function(d) {return xScale(d)}).attr("y", height-margin);
     function xAxis(g) {
         return g.attr("transform", `translate(${margin}, ${height + margin})`).call(d3.axisBottom(xScale));
     }
@@ -73,6 +75,7 @@ function govChart() {
     const gx = svg.append("g")
     const gy = svg.append("g")
     gx.call(xAxis)
+    const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
     const chart = {
         perCapita: false,
         playing: false
@@ -85,9 +88,9 @@ function govChart() {
             yearInput.max = chart.years[chart.years.length - 1];
             function totalSpending(cat, year) {
                 year = year || chart.year
-                var total = data[year][cat]["Total"][0] * 1000000000;
+                var total = data[year][cat]["Total"][0] * moneyUnits;
                 if (chart.perCapita) {
-                    return total/(data[year]["Population"] * 1000000);
+                    return total/(data[year]["Population"] * popUnits);
                 } else {
                     return total;
                 }
@@ -102,9 +105,29 @@ function govChart() {
             chart.refresh = _ => {
                 var maxSpending = d3.max(chart.years, year => d3.max(categories, cat => totalSpending(cat, year)))
                 yScale.domain([0, maxSpending]);
-                svg.selectAll("rect").data(categories).transition().duration(500)
+                svg.selectAll("rect.bar").data(categories)
+                    .transition().duration(500)
                     .attr("height", cat => height - yScale(totalSpending(cat)))
                     .attr("y", cat => yScale(totalSpending(cat)));
+                // Give a little extra space to register mouseovers on tooltips in case the bar is too small
+                 svg.selectAll("rect.hoverzone").data(categories)
+                    .on("mouseover", cat => {
+                        const category = data[chart.year][cat]
+                        tooltip.transition(100).style("opacity", .9);
+                        tooltip.html(`${cat}<br/>` +
+                                     `Total:    ${formatNumber(category["Total"][0]*moneyUnits, true)}<br/>` +
+                                     `Federal:  ${formatNumber(category["Federal"][0]*moneyUnits, true)}<br/>` +
+                                     `State:    ${formatNumber(category["State"][0]*moneyUnits, true)}<br/>` +
+                                     `Local:    ${formatNumber(category["Local"][0]*moneyUnits, true)}<br/>` +
+                                     `Transfer: ${formatNumber(category["Transfer"][0]*moneyUnits, true)}<br/>`)
+                                .style("left", `${d3.event.pageX}px`)
+                                .style("top", `${d3.event.pageY}px`)})
+                    .on("mouseout", _ => {
+                        tooltip.transition().duration(100).style("opacity", 0)
+                    })
+                    .attr("height", cat => height - yScale(totalSpending(cat)) + margin)
+                    .attr("y", cat => yScale(totalSpending(cat)) - margin);
+               
                 gy.call(yAxis);
                 chart.updateEvents()
                 chart.updateExternal()
@@ -112,28 +135,27 @@ function govChart() {
             chart.updateEvents = _ => {
                 const displayedEvents = events.filter(e => {
                     return e.year <= chart.year && e.year > chart.year - keepEvents;
-                });
-                const join = chartbox.selectAll("text").data(displayedEvents);
-                join.enter().append("text").merge(join)
-                    .attr("x", e => xScale(e.category))
-                    .attr("y", (e, i) => i*20)
+                }).sort(e => -chart.year);
+                const join = eventFeed.selectAll("div").data(displayedEvents);
+                join.enter().append("div").merge(join)
+                    .attr("class", "card")
                     .text(e => `${e.year}: ${e.message}`);
                 join.exit().remove();
             };
             chart.updateExternal = _ => {
                 //Update fields external to the chart
                 $("#year-label").text(chart.year);
-                $("#population")[0].value = formatNumber(data[chart.year]["Population"] * 1000000 );
+                $("#population")[0].value = formatNumber(data[chart.year]["Population"] * popUnits );
                 if (data[chart.year]["GDP"]) {
-                    $("#gdp")[0].value = formatNumber(data[chart.year]["GDP"] * 1000000000);
+                    $("#gdp")[0].value = formatNumber(data[chart.year]["GDP"] * moneyUnits);
                 } else {
                     $("#gdp")[0].value = "NA";
                 }
-                $("#total-spending")[0].value = formatNumber(data[chart.year]["Total"]["Total"][0] * 1000000000, true);
-                $("#total-federal")[0].value = formatNumber(data[chart.year]["Total"]["Federal"][0] * 1000000000, true);
-                $("#total-state")[0].value = formatNumber(data[chart.year]["Total"]["State"][0] * 1000000000, true);
-                $("#total-local")[0].value = formatNumber(data[chart.year]["Total"]["Local"][0] * 1000000000, true);
-                $("#total-transfer")[0].value = formatNumber(data[chart.year]["Total"]["Transfer"][0] * 1000000000, true);
+                $("#total-spending")[0].value = formatNumber(data[chart.year]["Total"]["Total"][0] * moneyUnits, true);
+                $("#total-federal")[0].value = formatNumber(data[chart.year]["Total"]["Federal"][0] * moneyUnits, true);
+                $("#total-state")[0].value = formatNumber(data[chart.year]["Total"]["State"][0] * moneyUnits, true);
+                $("#total-local")[0].value = formatNumber(data[chart.year]["Total"]["Local"][0] * moneyUnits, true);
+                $("#total-transfer")[0].value = formatNumber(data[chart.year]["Total"]["Transfer"][0] * moneyUnits, true);
             }
             chart.setYear(chart.years[0]);
             yearInput.addEventListener('change', event => {chart.setYear(event.target.value)});
