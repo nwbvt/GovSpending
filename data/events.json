@@ -1,4 +1,7 @@
 {"events": [
+    {"year": 1907, "message": "Oklahoma Becomes A State"},
+    {"year": 1912, "message": "New Mexico Becomes A State"},
+    {"year": 1912, "message": "Arizona Becomes A State"},
     {"year": 1917, "message": "US Enters WW1"},
     {"year": 1918, "message": "WW1 Ends"},
     {"year": 1929, "message": "Great Depression"},
@@ -8,6 +11,8 @@
     {"year": 1946, "message": "Baby Boom Begins"},
     {"year": 1950, "message": "Korean War Begins"},
     {"year": 1953, "message": "Korean War Armistice"},
+    {"year": 1959, "message": "Alaska Becomes A State"},
+    {"year": 1959, "message": "Hawaii Becomes A State"},
     {"year": 1965, "message": "First Troops Enter Vietnam War"},
     {"year": 1966, "message": "Medicare Established"},
     {"year": 1969, "message": "Moon Landing"},
