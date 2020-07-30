@@ -1,6 +1,6 @@
 const categories = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions",
                     "Protection", "Transportation", "Welfare"];
-const margin = 120;
+const margin = 125;
 const playDelay = 500;
 
 const moneyUnits = 1000000000
@@ -70,7 +70,8 @@ function govChart() {
         return g.attr("transform", `translate(${margin}, ${height + margin})`).attr("class", "axis").call(d3.axisBottom(xScale));
     }
     function yAxis(g) {
-        return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis").call(d3.axisLeft(yScale));
+        return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis")
+            .call(d3.axisLeft(yScale).tickFormat(n => formatNumber(n, true)));
     }
     const gx = svg.append("g")
     const gy = svg.append("g")
