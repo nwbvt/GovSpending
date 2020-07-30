@@ -1,6 +1,6 @@
 const categories = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions",
                     "Protection", "Transportation", "Welfare"];
-const margin = 100;
+const margin = 120;
 const playDelay = 500;
 
 const moneyUnits = 1000000000
@@ -52,7 +52,7 @@ function govChart() {
     const svg = d3.select("svg")
     const eventFeed = d3.select("#eventFeed")
     const height = 600;
-    const width = 800;
+    const width = 1000;
     svg.attr("height", height + 2*margin)
     svg.attr("width", width + 2*margin)
     const xScale = d3.scaleBand().domain(categories).range([0,width]);
@@ -67,10 +67,10 @@ function govChart() {
         .attr("width", xScale.bandwidth() - 2).attr("height", margin)
         .attr("x", function(d) {return xScale(d)}).attr("y", height-margin);
     function xAxis(g) {
-        return g.attr("transform", `translate(${margin}, ${height + margin})`).call(d3.axisBottom(xScale));
+        return g.attr("transform", `translate(${margin}, ${height + margin})`).attr("class", "axis").call(d3.axisBottom(xScale));
     }
     function yAxis(g) {
-        return g.attr("transform", `translate(${margin},${margin})`).call(d3.axisLeft(yScale));
+        return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis").call(d3.axisLeft(yScale));
     }
     const gx = svg.append("g")
     const gy = svg.append("g")
@@ -147,7 +147,7 @@ function govChart() {
                 $("#year-label").text(chart.year);
                 $("#population")[0].value = formatNumber(data[chart.year]["Population"] * popUnits );
                 if (data[chart.year]["GDP"]) {
-                    $("#gdp")[0].value = formatNumber(data[chart.year]["GDP"] * moneyUnits);
+                    $("#gdp")[0].value = formatNumber(data[chart.year]["GDP"] * moneyUnits, true);
                 } else {
                     $("#gdp")[0].value = "NA";
                 }
