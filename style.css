@@ -234,8 +234,8 @@ how to remove the virtical space around the range input in IE*/
 div.tooltip {
     position: absolute;
     text-align: right;
-    width: 190px;
-    height: 150px;
+    width: 200px;
+    height: 160px;
     padding: 10px;
     background: #5F4618;
     color: #ffffff;
