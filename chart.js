@@ -1,7 +1,7 @@
 const categories = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions",
                     "Protection", "Transportation", "Welfare"];
 const margin = 125;
-const playDelay = 500;
+const playDelay = 1000;
 
 const moneyUnits = 1000000000
 const popUnits = 1000000
@@ -106,15 +106,12 @@ function govChart() {
             chart.refresh = _ => {
                 var maxSpending = d3.max(chart.years, year => d3.max(categories, cat => totalSpending(cat, year)))
                 yScale.domain([0, maxSpending]);
-                svg.selectAll("rect.bar").data(categories)
-                    .transition().duration(500)
-                    .attr("height", cat => height - yScale(totalSpending(cat)))
-                    .attr("y", cat => yScale(totalSpending(cat)));
+                // Add tooltip sections
                 // Give a little extra space to register mouseovers on tooltips in case the bar is too small
                  svg.selectAll("rect.hoverzone").data(categories)
                     .on("mouseover", cat => {
                         const category = data[chart.year][cat]
-                        tooltip.transition(100).style("opacity", .9);
+                        tooltip.style("opacity", .9);
                         tooltip.html(`${cat}<br/>` +
                                      `Total:    ${formatNumber(category["Total"][0]*moneyUnits, true)}<br/>` +
                                      `Federal:  ${formatNumber(category["Federal"][0]*moneyUnits, true)}<br/>` +
@@ -124,10 +121,15 @@ function govChart() {
                                 .style("left", `${d3.event.pageX}px`)
                                 .style("top", `${d3.event.pageY}px`)})
                     .on("mouseout", _ => {
-                        tooltip.transition().duration(100).style("opacity", 0)
+                        tooltip.transition().style("opacity", 0)
                     })
                     .attr("height", cat => height - yScale(totalSpending(cat)) + margin)
                     .attr("y", cat => yScale(totalSpending(cat)) - margin);
+                //Update the bars
+                svg.selectAll("rect.bar").data(categories)
+                    .transition().duration(1000)
+                    .attr("height", cat => height - yScale(totalSpending(cat)))
+                    .attr("y", cat => yScale(totalSpending(cat)));
                
                 gy.call(yAxis);
                 chart.updateEvents()
