@@ -13,7 +13,7 @@ d3.json("data/events.json", resp => {
 
 const keepEvents = 20;
 
-function formatNumber(num, currency) {
+function formatNumber(num, currency, percentage) {
     var string = "";
     var negated = false;
     if (num < 0) {
@@ -43,10 +43,14 @@ function formatNumber(num, currency) {
     if (negated) {
         string = "-" + string;
     }
+    if (percentage) {
+        string = string + "%";
+    }
     return string;
 }
 
 const levelChooser = $("#levelSelect")[0]
+const unitsChooser = $("#unitsSelect")[0]
 
 function govChart() {
 
@@ -72,19 +76,20 @@ function govChart() {
             .attr("class", "axis x-axis").call(d3.axisBottom(xScale)).selectAll("text")
             .attr("transform", "rotate(45)").attr("text-anchor", "start");
     }
+    const chart = {
+        perCapita: false,
+        playing: false,
+        level: levelChooser.value,
+        units: unitsChooser.value
+    }
     function yAxis(g) {
         return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis y-axis")
-            .call(d3.axisLeft(yScale).tickFormat(n => formatNumber(n, true)));
+            .call(d3.axisLeft(yScale).tickFormat(n => formatNumber(n, chart.units != "gdp", chart.units == "gdp")));
     }
     const gx = svg.append("g")
     const gy = svg.append("g")
     gx.call(xAxis)
     const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
-    const chart = {
-        perCapita: false,
-        playing: false,
-        level: levelChooser.value
-    }
     const yearInput = $("#year")[0]
     d3.json("data/data.json",
         data => {
@@ -94,11 +99,18 @@ function govChart() {
             function spending(cat, year) {
                 year = year || chart.year
                 const level = $("#levelSelect")[0].value
-                var total = data[year][cat][level][0] * moneyUnits;
-                if (chart.perCapita) {
-                    return total/(data[year]["Population"] * popUnits);
-                } else {
+                var total = data[year][cat][level][0];
+                if (chart.units === "percapita") {
+                    return total*moneyUnits/(data[year]["Population"] * popUnits);
+                }
+                if (chart.units === "billions") {
                     return total;
+                }
+                if (chart.units === "gdp") {
+                    if (data[year]["GDP"]) {
+                        return (total/(data[year]["GDP"])) * 100;
+                    }
+                    return 0;
                 }
             }
             chart.setYear = year => {
@@ -167,18 +179,14 @@ function govChart() {
             }
             chart.setYear(chart.years[0]);
             yearInput.addEventListener('change', event => {chart.setYear(event.target.value)});
-            $("#percapita")[0].addEventListener('change', event => {
-                if (event.target.checked) {
-                    chart.perCapita = true;
-                } else {
-                    chart.perCapita = false;
-                }
-                chart.refresh();
-            })
             levelChooser.addEventListener('change', event=> {
                 chart.level = event.target.value;
-                chart.refresh()
-            })
+                chart.refresh();
+            });
+            unitsChooser.addEventListener('change', event => {
+                chart.units = event.target.value;
+                chart.refresh();
+            });
         })
     const playButton = $("#playButton")
     chart.play = _ => {

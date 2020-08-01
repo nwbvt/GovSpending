@@ -95,24 +95,25 @@
       </div>
       <div class="row">
         <div class="col-4">
-            <div class="form-group row">
-              <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" id="percapita">
-                <label class="custom-control-label" for="percapita">Per Capita</label>
-              </div>
-            </div>
-        </div>
-        <div class="col-4">
-
-        </div>
-        <div class="col-4">
           <div class="input-group mb-3">
-            <div class="input-group-text" for="levelSelect">Level</div>
+            <div class="input-group-text" for="levelSelect">Government Level</div>
             <select class="custom-select" id="levelSelect">
               <option value="Total" selected>Total</option>
               <option value="Federal">Federal</option>
               <option value="State">State</option>
               <option value="Local">Local</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <div class="input-group mb-3">
+            <div class="input-group-text" for="unitsSelect">Units</div>
+            <select class="custom-select" id="unitsSelect">
+              <option value="billions" selected>Billions (of 2012 USD)</option>
+              <option value="percapita">Per Capita (in 2012 USD)</option>
+              <option value="gdp">GDP Percentage</option>
             </select>
           </div>
         </div>
