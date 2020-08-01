@@ -17,6 +17,18 @@ div.card {
     opacity: .5;
 }
 
+div.input-group-text {
+    background-color: #BA7800;
+    color: #dddddd;
+    border: 0;
+}
+
+select.custom-select {
+    background-color: #7C5204;
+    color: #dddddd;
+    border: 0;
+}
+
 button.btn {
     background-color: #BA7800;
     color: #ffffff

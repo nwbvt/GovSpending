@@ -1,5 +1,4 @@
-const categories = ["Defense", "Education", "General Government", "Health Care", "Interest", "Other Spending", "Pensions",
-                    "Protection", "Transportation", "Welfare"];
+const categories = ["Health Care", "Pensions", "Welfare", "Education", "Transportation", "Protection", "Defense", "General Government", "Interest", "Other Spending"];
 const margin = 125;
 const playDelay = 1000;
 
@@ -47,6 +46,8 @@ function formatNumber(num, currency) {
     return string;
 }
 
+const levelChooser = $("#levelSelect")[0]
+
 function govChart() {
 
     const svg = d3.select("svg")
@@ -81,7 +82,8 @@ function govChart() {
     const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
     const chart = {
         perCapita: false,
-        playing: false
+        playing: false,
+        level: levelChooser.value
     }
     const yearInput = $("#year")[0]
     d3.json("data/data.json",
@@ -89,9 +91,10 @@ function govChart() {
             chart.years = Object.keys(data);
             yearInput.min = chart.years[0];
             yearInput.max = chart.years[chart.years.length - 1];
-            function totalSpending(cat, year) {
+            function spending(cat, year) {
                 year = year || chart.year
-                var total = data[year][cat]["Total"][0] * moneyUnits;
+                const level = $("#levelSelect")[0].value
+                var total = data[year][cat][level][0] * moneyUnits;
                 if (chart.perCapita) {
                     return total/(data[year]["Population"] * popUnits);
                 } else {
@@ -106,7 +109,7 @@ function govChart() {
                 chart.refresh();
             }
             chart.refresh = _ => {
-                var maxSpending = d3.max(chart.years, year => d3.max(categories, cat => totalSpending(cat, year)))
+                var maxSpending = d3.max(chart.years, year => d3.max(categories, cat => spending(cat, year)))
                 yScale.domain([0, maxSpending]);
                 // Add tooltip sections
                 // Give a little extra space to register mouseovers on tooltips in case the bar is too small
@@ -125,13 +128,13 @@ function govChart() {
                     .on("mouseout", _ => {
                         tooltip.transition().style("opacity", 0)
                     })
-                    .attr("height", cat => height - yScale(totalSpending(cat)) + margin)
-                    .attr("y", cat => yScale(totalSpending(cat)) - margin);
+                    .attr("height", cat => height - yScale(spending(cat)) + margin)
+                    .attr("y", cat => yScale(spending(cat)) - margin);
                 //Update the bars
                 svg.selectAll("rect.bar").data(categories)
                     .transition().duration(1000)
-                    .attr("height", cat => height - yScale(totalSpending(cat)))
-                    .attr("y", cat => yScale(totalSpending(cat)));
+                    .attr("height", cat => height - yScale(spending(cat)))
+                    .attr("y", cat => yScale(spending(cat)));
                
                 gy.call(yAxis);
                 chart.updateEvents()
@@ -171,6 +174,10 @@ function govChart() {
                     chart.perCapita = false;
                 }
                 chart.refresh();
+            })
+            levelChooser.addEventListener('change', event=> {
+                chart.level = event.target.value;
+                chart.refresh()
             })
         })
     const playButton = $("#playButton")
