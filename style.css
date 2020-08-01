@@ -39,9 +39,13 @@ input.form-control-plaintext {
 .axis path {
     stroke: #BA7800;
 }
-.axis text {
+.y-axis text {
     fill: #7C5204;
     font-size: small;
+}
+.x-axis text {
+    fill: #7C5204;
+    font-size: medium;
 }
 
 /*
@@ -234,7 +238,7 @@ how to remove the virtical space around the range input in IE*/
 div.tooltip {
     position: absolute;
     text-align: right;
-    width: 200px;
+    width: 220px;
     height: 160px;
     padding: 10px;
     background: #5F4618;

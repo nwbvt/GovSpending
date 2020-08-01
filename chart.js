@@ -52,7 +52,7 @@ function govChart() {
     const svg = d3.select("svg")
     const eventFeed = d3.select("#eventFeed")
     const height = 600;
-    const width = 1000;
+    const width = 800;
     svg.attr("height", height + 2*margin)
     svg.attr("width", width + 2*margin)
     const xScale = d3.scaleBand().domain(categories).range([0,width]);
@@ -67,10 +67,12 @@ function govChart() {
         .attr("width", xScale.bandwidth() - 2).attr("height", margin)
         .attr("x", function(d) {return xScale(d)}).attr("y", height-margin);
     function xAxis(g) {
-        return g.attr("transform", `translate(${margin}, ${height + margin})`).attr("class", "axis").call(d3.axisBottom(xScale));
+        return g.attr("transform", `translate(${margin}, ${height + margin})`)
+            .attr("class", "axis x-axis").call(d3.axisBottom(xScale)).selectAll("text")
+            .attr("transform", "rotate(45)").attr("text-anchor", "start");
     }
     function yAxis(g) {
-        return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis")
+        return g.attr("transform", `translate(${margin},${margin})`).attr("class", "axis y-axis")
             .call(d3.axisLeft(yScale).tickFormat(n => formatNumber(n, true)));
     }
     const gx = svg.append("g")
